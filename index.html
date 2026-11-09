@@ -24,17 +24,24 @@
       font-family: 'Inter', sans-serif;
     }
     
-    /* Format cetak / Print Styling */
+    /* Format cetak / Print Styling Presisi Kedinasan */
     @media print {
       @page {
         size: A4 portrait;
-        margin: 1.2cm 1.5cm;
+        margin: 10mm 10mm 10mm 10mm;
+      }
+      *, *:before, *:after {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+        box-sizing: border-box !important;
       }
       body {
         background-color: #fff !important;
         color: #000 !important;
         margin: 0 !important;
         padding: 0 !important;
+        font-family: Arial, Helvetica, sans-serif !important;
       }
       body * {
         visibility: hidden;
@@ -46,20 +53,99 @@
         position: absolute;
         left: 0;
         top: 0;
-        width: 100%;
+        width: 100% !important;
+        max-width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
         box-shadow: none !important;
         border: none !important;
+        border-radius: 0 !important;
+        background: transparent !important;
       }
       .no-print {
         display: none !important;
+        visibility: hidden !important;
+      }
+
+      /* Kunci tabel agar rapi dan tidak terpotong di tengah baris */
+      table.lkh-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        page-break-inside: auto;
+        table-layout: fixed !important;
+      }
+      table.lkh-table thead {
+        display: table-header-group !important;
+      }
+      table.lkh-table tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        page-break-after: auto;
+      }
+      table.lkh-table th, table.lkh-table td {
+        border: 1px solid #000 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        word-wrap: break-word !important;
+      }
+
+      .avoid-break, .footer-doc-block, .sign-table, .notes-wrapper {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
       }
     }
 
-    .lkh-table th, .lkh-table td {
+    /* Styling tabel umum */
+    table.lkh-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    table.lkh-table th, table.lkh-table td {
       border: 1px solid #000;
-      padding: 5px 8px;
+      padding: 4px 6px;
+      word-wrap: break-word;
+      vertical-align: top;
+    }
+
+    /* Mode khusus saat merender file PDF melalui html2pdf agar garis tabel tampak utuh seperti di Word */
+    .pdf-render-mode {
+      width: 190mm !important;
+      max-width: 190mm !important;
+      padding: 2mm 3mm 2mm 2mm !important;
+      margin: 0 auto !important;
+      box-sizing: border-box !important;
+      box-shadow: none !important;
+      border: none !important;
+      border-radius: 0 !important;
+      background: #ffffff !important;
+      color: #000000 !important;
+      font-family: Arial, Helvetica, sans-serif !important;
+      overflow: visible !important;
+    }
+    .pdf-render-mode table.lkh-table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+      table-layout: fixed !important;
+      border: 1px solid #000000 !important;
+      margin-bottom: 2mm !important;
+    }
+    .pdf-render-mode table.lkh-table thead tr th {
+      background-color: #ededed !important;
+      color: #000000 !important;
+      font-weight: bold !important;
+      text-align: center !important;
+      border: 1px solid #000000 !important;
+      padding: 5px 4px !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .pdf-render-mode table.lkh-table tbody tr td {
+      border: 1px solid #000000 !important;
+      padding: 4px 6px !important;
+      line-height: 1.3 !important;
+      font-size: 9.5pt !important;
+      color: #000000 !important;
     }
   </style>
 </head>
@@ -142,7 +228,7 @@
             <div>
               <div class="flex items-center justify-between mb-1">
                 <label class="block text-xs font-medium text-slate-600">Detail Pekerjaan (Otomatis 1, 2, dst & Kapital)</label>
-                <span class="text-[10px] text-emerald-600 font-medium">Tekan Enter untuk poin baru</span>
+                <span class="text-[10px] text-emerald-600 font-medium">Tekan Enter untuk baris baru</span>
               </div>
               <textarea id="actDescription" rows="4" required placeholder="1. Mulai tulis rincian pekerjaan di sini..." class="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm"></textarea>
             </div>
@@ -187,7 +273,7 @@
             <div class="border-t pt-3 mt-3">
               <span class="text-xs font-bold text-emerald-700 uppercase tracking-wider block mb-2">Atasan Langsung / Kepala Madrasah</span>
               <div class="space-y-2">
-                <input type="text" id="headName" placeholder="Nama Atasan (mis: Ilham, M. T.)" class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-emerald-500">
+                <input type="text" id="headName" placeholder="Nama Atasan (mis: Dwi Karsono, M. Pd.)" class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-emerald-500">
                 <input type="text" id="headNip" placeholder="NIP Atasan (Kosongkan bila tidak ada)" class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-emerald-500">
               </div>
             </div>
@@ -245,18 +331,15 @@
             </div>
           </div>
 
-          <!-- Tombol Download -->
+          <!-- Tombol Download Word & Cetak LKH -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <button onclick="exportToWord()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition">
+            <button type="button" onclick="exportToWord()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition cursor-pointer">
               <i class="fa-solid fa-file-word text-base"></i> Download Word (.docx)
             </button>
-            <button onclick="exportToPdf()" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2.5 px-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition">
-              <i class="fa-solid fa-file-pdf text-base"></i> Download PDF
+            <button type="button" onclick="window.print()" class="w-full bg-slate-700 hover:bg-slate-800 text-white py-2.5 px-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition cursor-pointer">
+              <i class="fa-solid fa-print text-base"></i> Cetak LKH
             </button>
           </div>
-          <button onclick="window.print()" class="w-full mt-2 bg-slate-700 hover:bg-slate-800 text-white py-2 px-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition">
-            <i class="fa-solid fa-print"></i> Langsung Print LKH
-          </button>
 
           <!-- Indikator Keamanan Data -->
           <div class="mt-4 pt-3 border-t text-[11px] text-slate-500 flex items-center justify-between">
@@ -284,60 +367,60 @@
         </div>
 
         <!-- Wadah Dokumen Kertas LKH (Yang Dicetak / Dikonversi) -->
-        <div class="bg-white p-6 sm:p-10 rounded-2xl shadow-md border border-slate-200 text-black" id="printArea">
+        <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-slate-200 text-black mx-auto" id="printArea" style="max-width: 820px; font-family: Arial, Helvetica, sans-serif; box-sizing: border-box;">
           
-          <!-- Header Dokumen Sesuai Format Word -->
-          <div class="text-center mb-4">
-            <h2 class="text-base sm:text-lg font-bold uppercase tracking-wide">LEMBAR KINERJA HARIAN</h2>
+          <!-- Header Dokumen Sesuai Format Word & Kedinasan -->
+          <div class="text-center mb-3">
+            <h2 class="text-base sm:text-lg font-bold uppercase tracking-wider mb-2">LEMBAR KINERJA HARIAN</h2>
           </div>
 
           <!-- Rincian Identitas Pegawai di Dokumen -->
-          <div class="mb-4 text-xs sm:text-sm font-normal">
-            <table class="w-full" style="border: none; border-collapse: collapse;">
+          <div class="mb-3 text-xs sm:text-sm font-normal">
+            <table class="w-full" style="border: none; border-collapse: collapse; line-height: 1.25;">
               <tr style="border: none;">
-                <td style="width: 180px; padding: 1.5px 0; border: none; font-weight: 600;">NAMA</td>
-                <td style="width: 15px; border: none;">:</td>
-                <td style="border: none;" id="docViewMakerName">-</td>
+                <td style="width: 170px; padding: 1.5px 0; border: none; font-weight: bold;">NAMA</td>
+                <td style="width: 15px; padding: 1.5px 0; border: none;">:</td>
+                <td style="padding: 1.5px 0; border: none;" id="docViewMakerName">-</td>
               </tr>
               <tr style="border: none;">
-                <td style="padding: 1.5px 0; border: none; font-weight: 600;">NIP</td>
-                <td style="border: none;">:</td>
-                <td style="border: none;" id="docViewMakerNip">-</td>
+                <td style="padding: 1.5px 0; border: none; font-weight: bold;">NIP</td>
+                <td style="padding: 1.5px 0; border: none;">:</td>
+                <td style="padding: 1.5px 0; border: none;" id="docViewMakerNip">-</td>
               </tr>
               <tr style="border: none;">
-                <td style="padding: 1.5px 0; border: none; font-weight: 600;">JABATAN</td>
-                <td style="border: none;">:</td>
-                <td style="border: none;" id="docViewMakerJabatan">-</td>
+                <td style="padding: 1.5px 0; border: none; font-weight: bold;">JABATAN</td>
+                <td style="padding: 1.5px 0; border: none;">:</td>
+                <td style="padding: 1.5px 0; border: none;" id="docViewMakerJabatan">-</td>
               </tr>
               <tr style="border: none;">
-                <td style="padding: 1.5px 0; border: none; font-weight: 600;">SATKER</td>
-                <td style="border: none;">:</td>
-                <td style="border: none; font-weight: 600;" id="docInstansiTitle">MTs NEGERI LANDAK</td>
+                <td style="padding: 1.5px 0; border: none; font-weight: bold;">SATKER</td>
+                <td style="padding: 1.5px 0; border: none;">:</td>
+                <td style="padding: 1.5px 0; border: none; font-weight: bold;" id="docInstansiTitle">MTs NEGERI LANDAK</td>
               </tr>
               <tr style="border: none;">
-                <td style="padding: 1.5px 0; border: none; font-weight: 600;">ATASAN LANGSUNG</td>
-                <td style="border: none;">:</td>
-                <td style="border: none;" id="docViewHeadName">Ilham, M. T.</td>
+                <td style="padding: 1.5px 0; border: none; font-weight: bold;">ATASAN LANGSUNG</td>
+                <td style="padding: 1.5px 0; border: none;">:</td>
+                <td style="padding: 1.5px 0; border: none;" id="docViewHeadName">Dwi Karsono, M. Pd.</td>
               </tr>
               <tr style="border: none;">
-                <td style="padding: 1.5px 0; border: none; font-weight: 600;">PERIODE PELAPORAN</td>
-                <td style="border: none;">:</td>
-                <td style="border: none;" id="docPeriodeTitle">-</td>
+                <td style="padding: 1.5px 0; border: none; font-weight: bold;">PERIODE PELAPORAN</td>
+                <td style="padding: 1.5px 0; border: none;">:</td>
+                <td style="padding: 1.5px 0; border: none;" id="docPeriodeTitle">-</td>
               </tr>
             </table>
           </div>
 
           <!-- Tabel Utama Lembar Kinerja Harian -->
-          <div class="overflow-x-auto">
+          <div class="overflow-x-auto w-full" style="padding-right: 1px;">
             <table class="lkh-table w-full border-collapse border border-black text-xs sm:text-sm text-left">
               <thead>
-                <tr class="bg-slate-100 text-center font-bold">
-                  <th style="width: 40px; text-align: center;">No</th>
-                  <th style="width: 180px; text-align: center;">Hari/Tanggal</th>
-                  <th style="width: 95px; text-align: center;">Jam Mulai</th>
-                  <th style="width: 95px; text-align: center;">Jam Selesai</th>
-                  <th>Detail Pekerjaan</th>
-                  <th class="no-print" style="width: 70px; text-align: center;">Aksi</th>
+                <tr style="background-color: #ededed;" class="text-center font-bold">
+                  <th style="width: 5%; text-align: center; border: 1px solid #000; padding: 5px 4px;">No</th>
+                  <th style="width: 25%; text-align: center; border: 1px solid #000; padding: 5px 4px;">Hari/Tanggal</th>
+                  <th style="width: 12%; text-align: center; border: 1px solid #000; padding: 5px 4px;">Jam Mulai</th>
+                  <th style="width: 12%; text-align: center; border: 1px solid #000; padding: 5px 4px;">Jam Selesai</th>
+                  <th style="width: 40%; text-align: center; border: 1px solid #000; padding: 5px 4px;">Detail Pekerjaan</th>
+                  <th class="no-print" style="width: 6%; text-align: center; border: 1px solid #000;">Aksi</th>
                 </tr>
               </thead>
               <tbody id="lkhTableBody">
@@ -346,41 +429,39 @@
             </table>
           </div>
 
-          <!-- Catatan Kaki Sesuai Format -->
-          <div class="mt-4 text-xs text-slate-800 leading-snug">
-            <p class="font-bold">Catatan :</p>
-            <ol class="list-decimal pl-5 space-y-0.5">
-              <li>Laporan ini berisi harian, dan dilaporkan secara mingguan dengan ditandatangani oleh Atasan Langsung/Kepala Madrasah.</li>
-              <li>Laporan ini berlaku sejak tanggal <span id="docBerlakuSpan" class="font-medium">1 Maret 2022</span></li>
-            </ol>
-          </div>
+          <!-- Blok Kaki Dokumen: Catatan & Tanda Tangan Utuh Anti-Terpotong -->
+          <div class="footer-doc-block avoid-break mt-3.5 text-xs sm:text-sm" style="page-break-inside: avoid !important; break-inside: avoid !important;">
+            
+            <!-- Catatan Kaki Sesuai Format -->
+            <div class="notes-wrapper mb-3" style="line-height: 1.35;">
+              <p style="font-weight: bold; margin-bottom: 2px;">Catatan :</p>
+              <ol style="margin-left: 20px; padding: 0; list-style-type: decimal;">
+                <li>Laporan ini berisi harian, dan dilaporkan secara mingguan dengan ditandatangani oleh Atasan Langsung/Kepala Madrasah.</li>
+                <li>Laporan ini berlaku sejak tanggal <span id="docBerlakuSpan" style="font-weight: 500;">1 Maret 2022</span></li>
+              </ol>
+            </div>
 
-          <!-- Blok Tanda Tangan Bawah Sejajar Rapi Menggunakan Tabel 2 Kolom -->
-          <div class="mt-6 text-xs sm:text-sm">
-            <table class="w-full" style="border: none; border-collapse: collapse; text-align: center;">
+            <!-- Tanda Tangan Dua Kolom Sejajar Rapi Menggunakan Tabel -->
+            <table class="sign-table w-full" style="width: 100%; border: none; border-collapse: collapse; text-align: center; margin-top: 12px;">
               <tr style="border: none;">
-                <!-- Ruang kosong atas sisi kiri agar sejajar dengan tanggal di sisi kanan -->
-                <td style="width: 50%; border: none; padding-bottom: 4px;">&nbsp;</td>
-                <!-- Tanggal TTD di sisi kanan persis lurus di atas 'Yang Membuat Laporan' -->
-                <td style="width: 50%; border: none; padding-bottom: 4px; text-align: center;">
-                  <span id="docSignDate" class="font-medium">Ngabang, 1 Maret 2022</span>
+                <!-- Kolom Kiri: Atasan Langsung -->
+                <td style="width: 50%; border: none; vertical-align: top; text-align: center; padding: 0 10px;">
+                  <div style="height: 20px; line-height: 20px;">&nbsp;</div>
+                  <p style="font-weight: 600; margin-bottom: 65px;">Mengetahui/Menyetujui,</p>
+                  <p style="font-weight: bold;" id="docSignHeadName">(DWI KARSONO, M. Pd.)</p>
+                  <p style="font-size: 11px; margin-top: 2px;" id="docSignHeadNip"></p>
                 </td>
-              </tr>
-              <tr style="border: none;">
-                <!-- Kolom TTD Atasan Langsung / Kepala Madrasah (Kiri) -->
-                <td style="border: none; vertical-align: top; text-align: center; padding-top: 2px;">
-                  <p class="font-semibold mb-16">Mengetahui/Menyetujui,</p>
-                  <p class="font-bold" id="docSignHeadName">(ILHAM, M. T.)</p>
-                  <p class="text-xs mt-0.5" id="docSignHeadNip"></p>
-                </td>
-                <!-- Kolom TTD Pembuat Laporan (Kanan) -->
-                <td style="border: none; vertical-align: top; text-align: center; padding-top: 2px;">
-                  <p class="font-semibold mb-16">Yang Membuat Laporan,</p>
-                  <p class="font-bold uppercase" id="docSignMakerName">(JULFIZA, S.T)</p>
-                  <p class="text-xs mt-0.5" id="docSignMakerNip"></p>
+                
+                <!-- Kolom Kanan: Yang Membuat Laporan (Lurus di Bawah Penanggalan Ngabang) -->
+                <td style="width: 50%; border: none; vertical-align: top; text-align: center; padding: 0 10px;">
+                  <div style="height: 20px; line-height: 20px; font-weight: normal;" id="docSignDate">Ngabang, 1 Maret 2022</div>
+                  <p style="font-weight: 600; margin-bottom: 65px;">Yang Membuat Laporan,</p>
+                  <p style="font-weight: bold; text-transform: uppercase;" id="docSignMakerName">(JULFIZA, S.T)</p>
+                  <p style="font-size: 11px; margin-top: 2px;" id="docSignMakerNip"></p>
                 </td>
               </tr>
             </table>
+
           </div>
 
         </div>
@@ -465,7 +546,7 @@
       makerName: "Julfiza, S.T",
       makerNip: "",
       makerJabatan: "Guru",
-      headName: "Ilham, M. T.",
+      headName: "Dwi Karsono, M. Pd.",
       headNip: "",
       periodeText: "",
       signDate: "Ngabang, 1 Maret 2022",
@@ -547,7 +628,7 @@
       if(fYear) fYear.value = yyyy;
     }
 
-    // Listener auto-detect hari dan jam kerja standar Kemenag / Madrasah
+    // Listener auto-detect hari dan jam kerja standar
     function setupDateInputListener() {
       const actDateInput = document.getElementById('actDate');
       if (!actDateInput) return;
@@ -744,7 +825,7 @@
       return `(${clean.toUpperCase()})`;
     }
 
-    // Memuat data tersimpan dari browser (Mendukung data versi sebelumnya agar tidak pernah hilang)
+    // Memuat data tersimpan dari browser
     function loadStoredData() {
       const savedItems = localStorage.getItem(STORAGE_KEY_ITEMS) || localStorage.getItem("lkh_madrasah_entries_v2");
       if(savedItems) {
@@ -770,7 +851,6 @@
     }
 
     function saveEntriesToStorage() {
-      // Simpan ke kunci utama dan kunci fallback cadangan browser
       localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(entries));
       localStorage.setItem("lkh_madrasah_entries_v2", JSON.stringify(entries));
     }
@@ -876,7 +956,6 @@
         document.getElementById('actDescription').value = '';
       }
 
-      // Simpan langsung ke memori lokal
       saveEntriesToStorage();
       renderLkhDoc();
     }
@@ -977,7 +1056,7 @@
       const effectiveBerlaku = profile.berlakuTgl || extractDateOnly(effectiveSignDate) || `01 ${monthName} ${selYear}`;
       document.getElementById('docBerlakuSpan').innerText = effectiveBerlaku;
 
-      document.getElementById('docSignHeadName').innerText = formatHeadSignatureName(profile.headName || "ILHAM, M. T.");
+      document.getElementById('docSignHeadName').innerText = formatHeadSignatureName(profile.headName || "DWI KARSONO, M. Pd.");
       document.getElementById('docSignHeadNip').innerText = profile.headNip ? `NIP. ${profile.headNip}` : "";
       
       const makerClean = (profile.makerName || "JULFIZA, S.T").trim().toUpperCase();
@@ -999,7 +1078,7 @@
       if(filtered.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="6" class="text-center py-8 text-slate-400 italic">
+            <td colspan="6" class="text-center py-8 text-slate-400 italic" style="border: 1px solid #000;">
               Belum ada kegiatan yang dicatat pada bulan ${monthName} ${selYear}.
             </td>
           </tr>
@@ -1010,14 +1089,16 @@
       filtered.forEach((row, index) => {
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition";
+        tr.style.pageBreakInside = "avoid";
+        tr.style.breakInside = "avoid";
         const autoEndTime = row.endTime || getStandardEndTime(row.date);
         tr.innerHTML = `
-          <td class="text-center font-medium">${index + 1}</td>
-          <td class="font-medium whitespace-nowrap">${getHariTanggalText(row.date)}</td>
-          <td class="text-center whitespace-nowrap">${row.startTime || "07.00 WIB"}</td>
-          <td class="text-center whitespace-nowrap">${autoEndTime}</td>
-          <td class="whitespace-pre-wrap">${escapeHtml(row.description)}</td>
-          <td class="text-center no-print">
+          <td class="text-center font-medium" style="border: 1px solid #000; padding: 4.5px 6px; vertical-align: top;">${index + 1}</td>
+          <td class="font-normal" style="border: 1px solid #000; padding: 4.5px 6px; vertical-align: top;">${getHariTanggalText(row.date)}</td>
+          <td class="text-center font-normal whitespace-nowrap" style="border: 1px solid #000; padding: 4.5px 6px; vertical-align: top;">${row.startTime || "07.00 WIB"}</td>
+          <td class="text-center font-normal whitespace-nowrap" style="border: 1px solid #000; padding: 4.5px 6px; vertical-align: top;">${autoEndTime}</td>
+          <td class="whitespace-pre-wrap font-normal" style="border: 1px solid #000; padding: 4.5px 6px; vertical-align: top; line-height: 1.35;">${escapeHtml(row.description)}</td>
+          <td class="text-center no-print" style="border: 1px solid #000; vertical-align: top;">
             <div class="flex items-center justify-center gap-1">
               <button onclick="editItem('${row.id}')" title="Edit" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded">
                 <i class="fa-solid fa-pen-to-square text-xs"></i>
@@ -1043,47 +1124,114 @@
     }
 
     // ==========================================
-    // EKSPOR KE MICROSOFT WORD (.DOC / .DOCX PERSIS FORMAT UPLOAD)
+    // EKSPOR KE PDF (via html2pdf.js) - Garis Pinggir Kanan Utuh Spt Word
+    // ==========================================
+    function exportToPdf() {
+      const selMonth = parseInt(document.getElementById('filterMonth').value, 10);
+      const selYear = parseInt(document.getElementById('filterYear').value, 10);
+      const monthName = INDO_MONTHS[selMonth - 1];
+
+      const printArea = document.getElementById('printArea');
+      if(!printArea) return;
+
+      const noPrintEls = printArea.querySelectorAll('.no-print');
+      noPrintEls.forEach(el => el.style.display = 'none');
+
+      // Terapkan mode PDF presisi dengan margin tabel terlindungi
+      printArea.classList.add('pdf-render-mode');
+
+      const opt = {
+        margin: [8, 8, 8, 8], // Margin seimbang di 4 sisi (mm)
+        filename: `Lembar_Kinerja_Harian_${monthName}_${selYear}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2.5, 
+          useCORS: true, 
+          scrollY: 0, 
+          scrollX: 0,
+          logging: false,
+          letterRendering: true,
+          backgroundColor: '#ffffff',
+          windowWidth: 840
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { 
+          mode: ['css', 'legacy'], 
+          avoid: ['tr', '.avoid-break', '.footer-doc-block', '.sign-table', '.notes-wrapper'] 
+        }
+      };
+
+      showToast("Menyiapkan dokumen PDF seperti format Word...");
+
+      html2pdf().set(opt).from(printArea).save().then(() => {
+        printArea.classList.remove('pdf-render-mode');
+        noPrintEls.forEach(el => el.style.display = '');
+        showToast("File PDF berhasil diunduh dengan tabel utuh!");
+      }).catch(err => {
+        printArea.classList.remove('pdf-render-mode');
+        noPrintEls.forEach(el => el.style.display = '');
+        console.error(err);
+        showToast("Gagal mengunduh PDF. Silakan gunakan tombol Print.");
+      });
+    }
+
+    // ==========================================
+    // EKSPOR KE MICROSOFT WORD (.docx / .doc)
     // ==========================================
     function exportToWord() {
       const selMonth = parseInt(document.getElementById('filterMonth').value, 10);
       const selYear = parseInt(document.getElementById('filterYear').value, 10);
       const monthName = INDO_MONTHS[selMonth - 1];
 
+      // Ambil data terfilter
       const filtered = entries.filter(item => {
         if(!item.date) return false;
         const [y, m] = item.date.split('-').map(Number);
         return y === selYear && m === selMonth;
       }).sort((a, b) => new Date(a.date) - new Date(b.date));
 
-      let rowsHtml = '';
-      if(filtered.length === 0) {
-        rowsHtml = `<tr><td colspan="5" style="border:1px solid #000; text-align:center; padding:12px;">Tidak ada catatan pekerjaan pada periode ini.</td></tr>`;
+      const lastDayOfMonth = new Date(selYear, selMonth, 0).getDate();
+      const periodeText = profile.periodeText || `1 - ${lastDayOfMonth} ${monthName} ${selYear}`;
+      const defaultSignDate = `Ngabang, 1 ${INDO_MONTHS[(selMonth % 12)]} ${selMonth === 12 ? selYear + 1 : selYear}`;
+      const signDate = profile.signDate || defaultSignDate;
+      const berlakuDate = profile.berlakuTgl || extractDateOnly(signDate) || `01 ${monthName} ${selYear}`;
+      const headSignName = formatHeadSignatureName(profile.headName || "DWI KARSONO, M. Pd.");
+      const makerSignName = `(${(profile.makerName || "JULFIZA, S.T").trim().toUpperCase()})`;
+
+      // Susun baris tabel Word
+      let tableRowsHtml = "";
+      if (filtered.length === 0) {
+        tableRowsHtml = `
+          <tr>
+            <td colspan="5" align="center" style="border: 1px solid black; padding: 10px; font-style: italic;">
+              Belum ada kegiatan yang dicatat pada bulan ${monthName} ${selYear}.
+            </td>
+          </tr>
+        `;
       } else {
-        filtered.forEach((r, idx) => {
-          const autoEndTime = r.endTime || getStandardEndTime(r.date);
-          rowsHtml += `
-            <tr>
-              <td style="border:1px solid #000; text-align:center; padding:5px 8px; vertical-align:top;">${idx + 1}</td>
-              <td style="border:1px solid #000; padding:5px 8px; vertical-align:top; white-space:nowrap;">${getHariTanggalText(r.date)}</td>
-              <td style="border:1px solid #000; text-align:center; padding:5px 8px; vertical-align:top; white-space:nowrap;">${r.startTime || "07.00 WIB"}</td>
-              <td style="border:1px solid #000; text-align:center; padding:5px 8px; vertical-align:top; white-space:nowrap;">${autoEndTime}</td>
-              <td style="border:1px solid #000; padding:5px 8px; vertical-align:top; white-space:pre-wrap;">${escapeHtml(r.description)}</td>
+        filtered.forEach((row, idx) => {
+          const autoEndTime = row.endTime || getStandardEndTime(row.date);
+          const descFormatted = escapeHtml(row.description).replace(/\n/g, '<br/>');
+          tableRowsHtml += `
+            <tr style="mso-yfti-irow: ${idx + 1};">
+              <td align="center" style="border: 1px solid black; padding: 4px 6px; width: 5%; vertical-align: top;">${idx + 1}</td>
+              <td style="border: 1px solid black; padding: 4px 6px; width: 25%; vertical-align: top; white-space: nowrap;">${getHariTanggalText(row.date)}</td>
+              <td align="center" style="border: 1px solid black; padding: 4px 6px; width: 12%; vertical-align: top; white-space: nowrap;">${row.startTime || "07.00 WIB"}</td>
+              <td align="center" style="border: 1px solid black; padding: 4px 6px; width: 12%; vertical-align: top; white-space: nowrap;">${autoEndTime}</td>
+              <td style="border: 1px solid black; padding: 4px 6px; width: 46%; vertical-align: top;">${descFormatted}</td>
             </tr>
           `;
         });
       }
 
-      const lastDayOfMonth = new Date(selYear, selMonth, 0).getDate();
-      const periodeDisplay = profile.periodeText || `1 - ${lastDayOfMonth} ${monthName} ${selYear}`;
-      const signDateDisplay = profile.signDate || `Ngabang, 1 ${INDO_MONTHS[(selMonth % 12)]} ${selMonth === 12 ? selYear + 1 : selYear}`;
-      const berlakuDisplay = profile.berlakuTgl || extractDateOnly(signDateDisplay) || `01 ${monthName} ${selYear}`;
-
-      const wordContent = `
-        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      // Template Dokumen Word MSO Compliant
+      const wordHtml = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+              xmlns:w='urn:schemas-microsoft-com:office:word' 
+              xmlns='http://www.w3.org/TR/REC-html40'>
         <head>
-          <meta charset='utf-8'>
-          <title>Lembar Kinerja Harian - ${monthName} ${selYear}</title>
+          <meta charset="utf-8">
+          <title>Lembar Kinerja Harian</title>
           <!--[if gte mso 9]>
           <xml>
             <w:WordDocument>
@@ -1095,216 +1243,149 @@
           <![endif]-->
           <style>
             @page Section1 {
-              size: 21.0cm 29.7cm; /* A4 Portrait */
+              size: 21.0cm 29.7cm;
               margin: 1.5cm 1.5cm 1.5cm 1.5cm;
-              mso-header-margin: 35.4pt;
-              mso-footer-margin: 35.4pt;
+              mso-header-margin: 0.5cm;
+              mso-footer-margin: 0.5cm;
               mso-paper-source: 0;
             }
             div.Section1 { page: Section1; }
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
+            body {
+              font-family: Arial, sans-serif;
+              font-size: 10pt;
+              line-height: 1.15;
+              color: #000;
             }
-            body { 
-              font-family: 'Arial', sans-serif; 
-              font-size: 10pt; 
-              color: #000; 
-              line-height: 1.15; 
-              mso-line-height-rule: exactly;
-            }
-            p, tr, td {
-              margin: 0;
+            p, tr, td, th {
+              margin: 0pt;
+              padding: 0pt;
               mso-margin-top-alt: 0pt;
               mso-margin-bottom-alt: 0pt;
             }
-            .title {
-              font-size: 12pt; 
-              font-weight: bold; 
-              text-align: center; 
-              margin-bottom: 12px; 
-              padding: 0;
-            }
-            .header-info { 
-              width: 100%; 
-              border: none; 
-              border-collapse: collapse;
-              margin-bottom: 10px; 
-              font-size: 10pt;
-            }
-            .header-info td { 
-              border: none; 
-              padding: 1px 0; 
-              vertical-align: top; 
-              line-height: 1.15;
-            }
-            table.data-table { 
-              border-collapse: collapse; 
-              width: 100%; 
-              margin-top: 4px; 
-              font-size: 9.5pt;
-            }
-            table.data-table th { 
-              border: 1px solid #000; 
-              background-color: #f2f2f2; 
-              padding: 4px 6px; 
-              text-align: center;
-              font-weight: bold; 
-              line-height: 1.15;
-            }
-            table.data-table td {
-              border: 1px solid #000;
-              padding: 3px 6px;
-              vertical-align: top;
-              line-height: 1.2;
-            }
-            .notes {
-              margin-top: 10px;
-              font-size: 8.5pt;
-              line-height: 1.25;
-            }
-            .sign-table {
+            table.mainTable {
               width: 100%;
-              border: none;
               border-collapse: collapse;
-              margin-top: 18px;
-              font-size: 10pt;
+              mso-table-lspace: 0pt;
+              mso-table-rspace: 0pt;
             }
-            .sign-table td {
-              border: none;
-              vertical-align: top;
-              line-height: 1.15;
+            table.mainTable th, table.mainTable td {
+              border: 1.0pt solid black;
+              mso-border-alt: solid black 1.0pt;
             }
           </style>
         </head>
-        <body>
+        <body lang="ID">
           <div class="Section1">
-            <div class="title">LEMBAR KINERJA HARIAN</div>
+            
+            <!-- Judul Dokumen -->
+            <p align="center" style="font-size: 12pt; font-weight: bold; margin-bottom: 12pt; text-align: center;">
+              LEMBAR KINERJA HARIAN
+            </p>
 
-            <table class="header-info">
+            <!-- Tabel Identitas Pegawai -->
+            <table border="0" cellspacing="0" cellpadding="0" style="width: 100%; border: none; font-size: 10pt; line-height: 1.25; margin-bottom: 8pt;">
               <tr>
-                <td style="width: 180px; font-weight: bold;">NAMA</td>
-                <td style="width: 15px;">:</td>
-                <td>${profile.makerName || ''}</td>
+                <td style="width: 180px; font-weight: bold; padding: 1pt 0;">NAMA</td>
+                <td style="width: 15px; padding: 1pt 0;">:</td>
+                <td style="padding: 1pt 0;">${escapeHtml(profile.makerName || "-")}</td>
               </tr>
               <tr>
-                <td style="font-weight: bold;">NIP</td>
-                <td>:</td>
-                <td>${profile.makerNip || ''}</td>
+                <td style="font-weight: bold; padding: 1pt 0;">NIP</td>
+                <td style="padding: 1pt 0;">:</td>
+                <td style="padding: 1pt 0;">${escapeHtml(profile.makerNip || "-")}</td>
               </tr>
               <tr>
-                <td style="font-weight: bold;">JABATAN</td>
-                <td>:</td>
-                <td>${profile.makerJabatan || ''}</td>
+                <td style="font-weight: bold; padding: 1pt 0;">JABATAN</td>
+                <td style="padding: 1pt 0;">:</td>
+                <td style="padding: 1pt 0;">${escapeHtml(profile.makerJabatan || "-")}</td>
               </tr>
               <tr>
-                <td style="font-weight: bold;">SATKER</td>
-                <td>:</td>
-                <td><strong>${profile.instansi || 'MTs NEGERI LANDAK'}</strong></td>
+                <td style="font-weight: bold; padding: 1pt 0;">SATKER</td>
+                <td style="padding: 1pt 0;">:</td>
+                <td style="font-weight: bold; padding: 1pt 0;">${escapeHtml(profile.instansi || "MTs NEGERI LANDAK")}</td>
               </tr>
               <tr>
-                <td style="font-weight: bold;">ATASAN LANGSUNG</td>
-                <td>:</td>
-                <td>${profile.headName || 'Ilham, M. T.'}</td>
+                <td style="font-weight: bold; padding: 1pt 0;">ATASAN LANGSUNG</td>
+                <td style="padding: 1pt 0;">:</td>
+                <td style="padding: 1pt 0;">${escapeHtml(profile.headName || "Dwi Karsono, M. Pd.")}</td>
               </tr>
               <tr>
-                <td style="font-weight: bold;">PERIODE PELAPORAN</td>
-                <td>:</td>
-                <td>${periodeDisplay}</td>
+                <td style="font-weight: bold; padding: 1pt 0;">PERIODE PELAPORAN</td>
+                <td style="padding: 1pt 0;">:</td>
+                <td style="padding: 1pt 0;">${escapeHtml(periodeText)}</td>
               </tr>
             </table>
 
-            <table class="data-table">
+            <!-- Tabel Data Kegiatan -->
+            <table class="mainTable" border="1" cellspacing="0" cellpadding="0" style="font-size: 9.5pt; width: 100%; margin-bottom: 10pt;">
               <thead>
-                <tr>
-                  <th style="width: 40px;">No</th>
-                  <th style="width: 170px;">Hari/Tanggal</th>
-                  <th style="width: 95px;">Jam Mulai</th>
-                  <th style="width: 95px;">Jam Selesai</th>
-                  <th>Detail Pekerjaan</th>
+                <tr style="background: #f2f2f2; mso-yfti-irow: 0; mso-yfti-firstrow: yes;">
+                  <th align="center" style="border: 1px solid black; padding: 5px 4px; width: 5%; font-weight: bold;">No</th>
+                  <th align="center" style="border: 1px solid black; padding: 5px 4px; width: 25%; font-weight: bold;">Hari/Tanggal</th>
+                  <th align="center" style="border: 1px solid black; padding: 5px 4px; width: 12%; font-weight: bold;">Jam Mulai</th>
+                  <th align="center" style="border: 1px solid black; padding: 5px 4px; width: 12%; font-weight: bold;">Jam Selesai</th>
+                  <th align="center" style="border: 1px solid black; padding: 5px 4px; width: 46%; font-weight: bold;">Detail Pekerjaan</th>
                 </tr>
               </thead>
               <tbody>
-                ${rowsHtml}
+                ${tableRowsHtml}
               </tbody>
             </table>
 
-            <div class="notes">
-              <strong>Catatan :</strong><br>
-              1. Laporan ini berisi harian, dan dilaporkan secara mingguan dengan ditandatangani oleh Atasan Langsung/Kepala Madrasah.<br>
-              2. Laporan ini berlaku sejak tanggal ${berlakuDisplay}
+            <!-- Catatan Kaki Dokumen -->
+            <div style="font-size: 9.5pt; line-height: 1.3; margin-top: 8pt; margin-bottom: 14pt;">
+              <p style="font-weight: bold; margin-bottom: 2pt;">Catatan :</p>
+              <ol style="margin-left: 20px; padding: 0; margin-top: 0; margin-bottom: 0;">
+                <li>Laporan ini berisi harian, dan dilaporkan secara mingguan dengan ditandatangani oleh Atasan Langsung/Kepala Madrasah.</li>
+                <li>Laporan ini berlaku sejak tanggal ${escapeHtml(berlakuDate)}</li>
+              </ol>
             </div>
 
-            <table class="sign-table">
+            <!-- Tanda Tangan 2 Kolom Sejajar Rapi -->
+            <table border="0" cellspacing="0" cellpadding="0" style="width: 100%; border: none; font-size: 10pt; text-align: center; margin-top: 14pt;">
               <tr>
-                <td style="width: 50%; text-align: center; padding-bottom: 4px;">&nbsp;</td>
-                <td style="width: 50%; text-align: center; padding-bottom: 4px;">
-                  ${signDateDisplay}
+                <td style="width: 50%; border: none; text-align: center; vertical-align: top; padding: 0 10px;">
+                  <div style="height: 16pt; line-height: 16pt;">&nbsp;</div>
+                  <p style="font-weight: bold; margin-bottom: 55pt;">Mengetahui/Menyetujui,</p>
+                  <p style="font-weight: bold;">${escapeHtml(headSignName)}</p>
+                  ${profile.headNip ? `<p style="font-size: 8.5pt; margin-top: 2pt;">NIP. ${escapeHtml(profile.headNip)}</p>` : ''}
                 </td>
-              </tr>
-              <tr>
-                <td style="text-align: center; width: 50%; vertical-align: top; padding-top: 2px;">
-                  Mengetahui/Menyetujui,<br><br><br><br><br>
-                  <strong>${formatHeadSignatureName(profile.headName || 'ILHAM, M. T.')}</strong>
-                  ${profile.headNip ? `<br>NIP. ${profile.headNip}` : ''}
-                </td>
-                <td style="text-align: center; width: 50%; vertical-align: top; padding-top: 2px;">
-                  Yang Membuat Laporan,<br><br><br><br><br>
-                  <strong>(${((profile.makerName || 'JULFIZA, S.T').trim().toUpperCase())})</strong>
-                  ${profile.makerNip ? `<br>NIP. ${profile.makerNip}` : ''}
+                <td style="width: 50%; border: none; text-align: center; vertical-align: top; padding: 0 10px;">
+                  <div style="height: 16pt; line-height: 16pt;">${escapeHtml(signDate)}</div>
+                  <p style="font-weight: bold; margin-bottom: 55pt;">Yang Membuat Laporan,</p>
+                  <p style="font-weight: bold;">${escapeHtml(makerSignName)}</p>
+                  ${profile.makerNip ? `<p style="font-size: 8.5pt; margin-top: 2pt;">NIP. ${escapeHtml(profile.makerNip)}</p>` : ''}
                 </td>
               </tr>
             </table>
+
           </div>
         </body>
         </html>
       `;
 
-      const blob = new Blob(['\ufeff' + wordContent], { type: 'application/msword' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      const cleanMaker = (profile.makerName || 'Laporan').replace(/[^a-zA-Z0-9]/g, '_');
-      link.download = `Lembar_Kinerja_Harian_${monthName}_${selYear}_${cleanMaker}.doc`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      showToast("File Word berhasil diunduh siap diprint!");
-    }
-
-    // ==========================================
-    // EKSPOR KE PDF (via html2pdf.js)
-    // ==========================================
-    function exportToPdf() {
-      const selMonth = parseInt(document.getElementById('filterMonth').value, 10);
-      const selYear = parseInt(document.getElementById('filterYear').value, 10);
-      const monthName = INDO_MONTHS[selMonth - 1];
-
-      const noPrintElements = document.querySelectorAll('.no-print');
-      noPrintElements.forEach(el => el.style.visibility = 'hidden');
-
-      const element = document.getElementById('printArea');
-      
-      const opt = {
-        margin: [6, 12, 10, 12],
-        filename: `Lembar_Kinerja_Harian_${monthName}_${selYear}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, scrollY: 0, logging: false },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      showToast("Sedang menyusun dokumen PDF...");
-
-      html2pdf().set(opt).from(element).save().then(() => {
-        noPrintElements.forEach(el => el.style.visibility = 'visible');
-        showToast("File PDF berhasil diunduh!");
-      }).catch(err => {
-        noPrintElements.forEach(el => el.style.visibility = 'visible');
+      try {
+        const blob = new Blob(['\ufeff', wordHtml], {
+          type: 'application/msword;charset=utf-8'
+        });
+        const fileName = `Lembar_Kinerja_Harian_${monthName}_${selYear}.doc`;
+        
+        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+          window.navigator.msSaveOrOpenBlob(blob, fileName);
+        } else {
+          const downloadLink = document.createElement("a");
+          downloadLink.href = URL.createObjectURL(blob);
+          downloadLink.download = fileName;
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+          URL.revokeObjectURL(downloadLink.href);
+        }
+        showToast("File Word berhasil diunduh!");
+      } catch (err) {
         console.error(err);
-        showToast("Gagal mengunduh PDF. Silakan gunakan tombol Print.");
-      });
+        showToast("Terjadi kesalahan saat mengekspor ke Word.");
+      }
     }
 
     function toggleBackupModal() {
